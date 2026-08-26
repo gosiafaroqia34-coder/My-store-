@@ -84,7 +84,8 @@
       resize: vertical;
     }
 
-    .save-btn {
+    .save-btn,
+    .login-btn {
       width: 100%;
       padding: 13px;
       background: #111;
@@ -94,10 +95,6 @@
       cursor: pointer;
       font-weight: bold;
       font-size: 16px;
-    }
-
-    .save-btn:hover {
-      background: #333;
     }
 
     .status {
@@ -122,17 +119,6 @@
       text-align: center;
     }
 
-    .login-btn {
-      width: 100%;
-      padding: 13px;
-      background: #111;
-      color: white;
-      border: none;
-      border-radius: 7px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
     #adminPanel {
       display: none;
     }
@@ -141,25 +127,39 @@
 
 <body>
 
+  <!-- LOGIN -->
   <div id="loginBox" class="login-box">
+
     <h2>Admin Login</h2>
 
     <div class="form-group">
       <label>Email</label>
-      <input type="email" id="email" placeholder="Admin email">
+      <input
+        type="email"
+        id="email"
+        placeholder="Admin email"
+      >
     </div>
 
     <div class="form-group">
       <label>Password</label>
-      <input type="password" id="password" placeholder="Password">
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+      >
     </div>
 
     <button class="login-btn" onclick="login()">
       Login
     </button>
+
+    <div id="loginStatus" class="status"></div>
+
   </div>
 
 
+  <!-- ADMIN PANEL -->
   <div id="adminPanel">
 
     <header>
@@ -174,10 +174,12 @@
     <div class="container">
 
       <div class="card">
+
         <h2>Add / Update Product</h2>
 
         <div class="form-group">
           <label>Product Name</label>
+
           <input
             type="text"
             id="productName"
@@ -185,16 +187,20 @@
           >
         </div>
 
+
         <div class="form-group">
           <label>Description</label>
+
           <textarea
             id="description"
             placeholder="Product description"
           ></textarea>
         </div>
 
+
         <div class="form-group">
           <label>Price (Rs.)</label>
+
           <input
             type="number"
             id="price"
@@ -202,8 +208,10 @@
           >
         </div>
 
+
         <div class="form-group">
           <label>Image URL</label>
+
           <input
             type="text"
             id="imageUrl"
@@ -211,8 +219,10 @@
           >
         </div>
 
+
         <div class="form-group">
           <label>Stock</label>
+
           <input
             type="number"
             id="stock"
@@ -220,11 +230,14 @@
           >
         </div>
 
+
         <button class="save-btn" onclick="saveProduct()">
           Save Product
         </button>
 
+
         <div id="status" class="status"></div>
+
       </div>
 
     </div>
@@ -232,50 +245,370 @@
   </div>
 
 
+  <!-- SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
   <script>
 
-    function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    const SUPABASE_URL =
+      "https://iuoknttbaqtjkvtdsmnc.supabase.co";
+
+    /*
+      Yahan apni Supabase ki PUBLISHABLE / ANON key paste karo.
+
+      Supabase:
+      Settings → API Keys
+      se Publishable key copy karo.
+    */
+
+    const SUPABASE_KEY =
+      "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE";
+
+
+    const { createClient } =
+      supabase;
+
+    const db =
+      createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    // =========================
+    // CHECK EXISTING SESSION
+    // =========================
+
+    async function checkSession() {
+
+      const {
+        data: { session }
+      } = await db.auth.getSession();
+
+      if (session) {
+
+        const isAdmin =
+          await checkAdmin(session.user.id);
+
+        if (isAdmin) {
+          showAdmin();
+        }
+
+      }
+
+    }
+
+
+    // =========================
+    // CHECK ADMIN
+    // =========================
+
+    async function checkAdmin(userId) {
+
+      const { data, error } =
+        await db
+          .from("admin_users")
+          .select("user_id")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+
+      if (error) {
+
+        console.error(error);
+
+        return false;
+      }
+
+
+      return !!data;
+
+    }
+
+
+    // =========================
+    // LOGIN
+    // =========================
+
+    async function login() {
+
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
 
       if (!email || !password) {
-        alert("Email aur password enter karo.");
+
+        alert(
+          "Email aur password enter karo."
+        );
+
         return;
       }
 
-      // Temporary test login.
-      // Real Supabase login hum next step mein lagayenge.
 
-      document.getElementById("loginBox").style.display = "none";
-      document.getElementById("adminPanel").style.display = "block";
+      const loginStatus =
+        document.getElementById(
+          "loginStatus"
+        );
+
+      loginStatus.style.display =
+        "block";
+
+      loginStatus.innerText =
+        "Login ho raha hai...";
+
+
+      const { data, error } =
+        await db.auth.signInWithPassword({
+
+          email: email,
+
+          password: password
+
+        });
+
+
+      if (error) {
+
+        loginStatus.innerText =
+          "Login error: " +
+          error.message;
+
+        return;
+      }
+
+
+      const isAdmin =
+        await checkAdmin(
+          data.user.id
+        );
+
+
+      if (!isAdmin) {
+
+        await db.auth.signOut();
+
+        loginStatus.innerText =
+          "Ye user admin nahi hai.";
+
+        return;
+      }
+
+
+      loginStatus.style.display =
+        "none";
+
+
+      showAdmin();
+
     }
 
 
-    function logout() {
-      document.getElementById("adminPanel").style.display = "none";
-      document.getElementById("loginBox").style.display = "block";
+    // =========================
+    // SHOW ADMIN
+    // =========================
+
+    function showAdmin() {
+
+      document
+        .getElementById("loginBox")
+        .style.display = "none";
+
+
+      document
+        .getElementById("adminPanel")
+        .style.display = "block";
+
     }
 
 
-    function saveProduct() {
+    // =========================
+    // LOGOUT
+    // =========================
 
-      const name = document.getElementById("productName").value;
-      const price = document.getElementById("price").value;
+    async function logout() {
+
+      await db.auth.signOut();
+
+
+      document
+        .getElementById("adminPanel")
+        .style.display = "none";
+
+
+      document
+        .getElementById("loginBox")
+        .style.display = "block";
+
+    }
+
+
+    // =========================
+    // SAVE PRODUCT
+    // =========================
+
+    async function saveProduct() {
+
+      const name =
+        document
+          .getElementById("productName")
+          .value
+          .trim();
+
+
+      const description =
+        document
+          .getElementById("description")
+          .value
+          .trim();
+
+
+      const price =
+        Number(
+          document
+            .getElementById("price")
+            .value
+        );
+
+
+      const imageUrl =
+        document
+          .getElementById("imageUrl")
+          .value
+          .trim();
+
+
+      const stock =
+        Number(
+          document
+            .getElementById("stock")
+            .value
+        );
+
 
       if (!name || !price) {
-        alert("Product name aur price enter karo.");
+
+        alert(
+          "Product name aur price enter karo."
+        );
+
         return;
       }
 
-      const status = document.getElementById("status");
 
-      status.style.display = "block";
+      const status =
+        document.getElementById(
+          "status"
+        );
+
+
+      status.style.display =
+        "block";
+
+
       status.innerText =
-        "Product test mode mein save hua: " + name +
-        " - Rs. " + price;
+        "Product database mein save ho raha hai...";
+
+
+      const {
+        data: { user }
+      } = await db.auth.getUser();
+
+
+      if (!user) {
+
+        status.innerText =
+          "Login session nahi hai. Dobara login karo.";
+
+        return;
+      }
+
+
+      const { data, error } =
+        await db
+          .from("products")
+          .insert([
+
+            {
+              name: name,
+
+              description:
+                description || null,
+
+              price: price,
+
+              image_url:
+                imageUrl || null,
+
+              stock:
+                Number.isNaN(stock)
+                  ? 0
+                  : stock
+
+            }
+
+          ])
+          .select();
+
+
+      if (error) {
+
+        console.error(error);
+
+        status.innerText =
+          "Database error: " +
+          error.message;
+
+        return;
+      }
+
+
+      status.innerText =
+        "✅ Product successfully database mein save ho gaya: " +
+        data[0].name +
+        " - Rs. " +
+        data[0].price;
+
+
+      // Clear form
+
+      document
+        .getElementById("productName")
+        .value = "";
+
+      document
+        .getElementById("description")
+        .value = "";
+
+      document
+        .getElementById("price")
+        .value = "";
+
+      document
+        .getElementById("imageUrl")
+        .value = "";
+
+      document
+        .getElementById("stock")
+        .value = "";
+
     }
+
+
+    // Start
+
+    checkSession();
 
   </script>
 
 </body>
-</html>
+        </html>
