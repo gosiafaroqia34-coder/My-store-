@@ -1,614 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <title>My Store | Admin</title>
+<script>
+  const SUPABASE_URL = "https://iuoknttbaqtjkvtdsmnc.supabase.co";
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
+  const SUPABASE_KEY = "YAHAN_APNI_PUBLISHABLE_KEY_PASTE_KARO";
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+  function login() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+      alert("Email aur password enter karo.");
+      return;
     }
 
-    body {
-      background: #f5f5f5;
-      color: #222;
+    // Filhaal test login
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("adminPanel").style.display = "block";
+  }
+
+
+  function logout() {
+    document.getElementById("adminPanel").style.display = "none";
+    document.getElementById("loginBox").style.display = "block";
+  }
+
+
+  async function saveProduct() {
+
+    const name = document.getElementById("productName").value.trim();
+    const description = document.getElementById("description").value.trim();
+    const price = Number(document.getElementById("price").value);
+    const imageUrl = document.getElementById("imageUrl").value.trim();
+    const stock = Number(document.getElementById("stock").value);
+
+    if (!name || !price) {
+      alert("Product name aur price enter karo.");
+      return;
     }
 
-    header {
-      background: #111;
-      color: white;
-      padding: 18px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header h1 {
-      font-size: 22px;
-    }
-
-    .logout-btn {
-      background: white;
-      color: #111;
-      border: none;
-      padding: 9px 14px;
-      border-radius: 7px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 30px auto;
-      padding: 0 15px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-      margin-bottom: 25px;
-    }
-
-    .card h2 {
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: bold;
-    }
-
-    .form-group input,
-    .form-group textarea {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 7px;
-      font-size: 15px;
-    }
-
-    .form-group textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .save-btn,
-    .login-btn {
-      width: 100%;
-      padding: 13px;
-      background: #111;
-      color: white;
-      border: none;
-      border-radius: 7px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    .status {
-      margin-top: 15px;
-      padding: 12px;
-      background: #eee;
-      border-radius: 7px;
-      display: none;
-    }
-
-    .login-box {
-      max-width: 450px;
-      margin: 60px auto;
-      padding: 25px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-    }
-
-    .login-box h2 {
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    #adminPanel {
-      display: none;
-    }
-  </style>
-</head>
-
-<body>
-
-  <!-- LOGIN -->
-  <div id="loginBox" class="login-box">
-
-    <h2>Admin Login</h2>
-
-    <div class="form-group">
-      <label>Email</label>
-      <input
-        type="email"
-        id="email"
-        placeholder="Admin email"
-      >
-    </div>
-
-    <div class="form-group">
-      <label>Password</label>
-      <input
-        type="password"
-        id="password"
-        placeholder="Password"
-      >
-    </div>
-
-    <button class="login-btn" onclick="login()">
-      Login
-    </button>
-
-    <div id="loginStatus" class="status"></div>
-
-  </div>
-
-
-  <!-- ADMIN PANEL -->
-  <div id="adminPanel">
-
-    <header>
-      <h1>My Store Admin</h1>
-
-      <button class="logout-btn" onclick="logout()">
-        Logout
-      </button>
-    </header>
-
-
-    <div class="container">
-
-      <div class="card">
-
-        <h2>Add / Update Product</h2>
-
-        <div class="form-group">
-          <label>Product Name</label>
-
-          <input
-            type="text"
-            id="productName"
-            placeholder="Example: Classic Watch"
-          >
-        </div>
-
-
-        <div class="form-group">
-          <label>Description</label>
-
-          <textarea
-            id="description"
-            placeholder="Product description"
-          ></textarea>
-        </div>
-
-
-        <div class="form-group">
-          <label>Price (Rs.)</label>
-
-          <input
-            type="number"
-            id="price"
-            placeholder="2500"
-          >
-        </div>
-
-
-        <div class="form-group">
-          <label>Image URL</label>
-
-          <input
-            type="text"
-            id="imageUrl"
-            placeholder="https://..."
-          >
-        </div>
-
-
-        <div class="form-group">
-          <label>Stock</label>
-
-          <input
-            type="number"
-            id="stock"
-            placeholder="10"
-          >
-        </div>
-
-
-        <button class="save-btn" onclick="saveProduct()">
-          Save Product
-        </button>
-
-
-        <div id="status" class="status"></div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- SUPABASE -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
-  <script>
-
-    const SUPABASE_URL =
-      "https://iuoknttbaqtjkvtdsmnc.supabase.co";
-
-    /*
-      Yahan apni Supabase ki PUBLISHABLE / ANON key paste karo.
-
-      Supabase:
-      Settings → API Keys
-      se Publishable key copy karo.
-    */
-
-    const SUPABASE_KEY =
-      "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE";
-
-
-    const { createClient } =
-      supabase;
-
-    const db =
-      createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
-
-
-    // =========================
-    // CHECK EXISTING SESSION
-    // =========================
-
-    async function checkSession() {
-
-      const {
-        data: { session }
-      } = await db.auth.getSession();
-
-      if (session) {
-
-        const isAdmin =
-          await checkAdmin(session.user.id);
-
-        if (isAdmin) {
-          showAdmin();
+    const status = document.getElementById("status");
+
+    status.style.display = "block";
+    status.innerText = "Product save ho raha hai...";
+
+    const { data, error } = await supabaseClient
+      .from("products")
+      .insert([
+        {
+          name: name,
+          description: description,
+          price: price,
+          image_url: imageUrl,
+          stock: stock
         }
-
-      }
-
-    }
-
-
-    // =========================
-    // CHECK ADMIN
-    // =========================
-
-    async function checkAdmin(userId) {
-
-      const { data, error } =
-        await db
-          .from("admin_users")
-          .select("user_id")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-
-      if (error) {
-
-        console.error(error);
-
-        return false;
-      }
-
-
-      return !!data;
-
-    }
-
-
-    // =========================
-    // LOGIN
-    // =========================
-
-    async function login() {
-
-      const email =
-        document
-          .getElementById("email")
-          .value
-          .trim();
-
-      const password =
-        document
-          .getElementById("password")
-          .value;
-
-
-      if (!email || !password) {
-
-        alert(
-          "Email aur password enter karo."
-        );
-
-        return;
-      }
-
-
-      const loginStatus =
-        document.getElementById(
-          "loginStatus"
-        );
-
-      loginStatus.style.display =
-        "block";
-
-      loginStatus.innerText =
-        "Login ho raha hai...";
-
-
-      const { data, error } =
-        await db.auth.signInWithPassword({
-
-          email: email,
-
-          password: password
-
-        });
-
-
-      if (error) {
-
-        loginStatus.innerText =
-          "Login error: " +
-          error.message;
-
-        return;
-      }
-
-
-      const isAdmin =
-        await checkAdmin(
-          data.user.id
-        );
-
-
-      if (!isAdmin) {
-
-        await db.auth.signOut();
-
-        loginStatus.innerText =
-          "Ye user admin nahi hai.";
-
-        return;
-      }
-
-
-      loginStatus.style.display =
-        "none";
-
-
-      showAdmin();
-
-    }
-
-
-    // =========================
-    // SHOW ADMIN
-    // =========================
-
-    function showAdmin() {
-
-      document
-        .getElementById("loginBox")
-        .style.display = "none";
-
-
-      document
-        .getElementById("adminPanel")
-        .style.display = "block";
-
-    }
-
-
-    // =========================
-    // LOGOUT
-    // =========================
-
-    async function logout() {
-
-      await db.auth.signOut();
-
-
-      document
-        .getElementById("adminPanel")
-        .style.display = "none";
-
-
-      document
-        .getElementById("loginBox")
-        .style.display = "block";
-
-    }
-
-
-    // =========================
-    // SAVE PRODUCT
-    // =========================
-
-    async function saveProduct() {
-
-      const name =
-        document
-          .getElementById("productName")
-          .value
-          .trim();
-
-
-      const description =
-        document
-          .getElementById("description")
-          .value
-          .trim();
-
-
-      const price =
-        Number(
-          document
-            .getElementById("price")
-            .value
-        );
-
-
-      const imageUrl =
-        document
-          .getElementById("imageUrl")
-          .value
-          .trim();
-
-
-      const stock =
-        Number(
-          document
-            .getElementById("stock")
-            .value
-        );
-
-
-      if (!name || !price) {
-
-        alert(
-          "Product name aur price enter karo."
-        );
-
-        return;
-      }
-
-
-      const status =
-        document.getElementById(
-          "status"
-        );
-
-
-      status.style.display =
-        "block";
-
+      ])
+      .select();
+
+    if (error) {
+      console.error(error);
 
       status.innerText =
-        "Product database mein save ho raha hai...";
+        "Error: " + error.message;
 
-
-      const {
-        data: { user }
-      } = await db.auth.getUser();
-
-
-      if (!user) {
-
-        status.innerText =
-          "Login session nahi hai. Dobara login karo.";
-
-        return;
-      }
-
-
-      const { data, error } =
-        await db
-          .from("products")
-          .insert([
-
-            {
-              name: name,
-
-              description:
-                description || null,
-
-              price: price,
-
-              image_url:
-                imageUrl || null,
-
-              stock:
-                Number.isNaN(stock)
-                  ? 0
-                  : stock
-
-            }
-
-          ])
-          .select();
-
-
-      if (error) {
-
-        console.error(error);
-
-        status.innerText =
-          "Database error: " +
-          error.message;
-
-        return;
-      }
-
-
-      status.innerText =
-        "✅ Product successfully database mein save ho gaya: " +
-        data[0].name +
-        " - Rs. " +
-        data[0].price;
-
-
-      // Clear form
-
-      document
-        .getElementById("productName")
-        .value = "";
-
-      document
-        .getElementById("description")
-        .value = "";
-
-      document
-        .getElementById("price")
-        .value = "";
-
-      document
-        .getElementById("imageUrl")
-        .value = "";
-
-      document
-        .getElementById("stock")
-        .value = "";
-
+      return;
     }
 
+    status.innerText =
+      "Product successfully save ho gaya: " +
+      name + " - Rs. " + price;
 
-    // Start
-
-    checkSession();
-
-  </script>
-
-</body>
-        </html>
+    // Form clear
+    document.getElementById("productName").value = "";
+    document.getElementById("description").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("imageUrl").value = "";
+    document.getElementById("stock").value = "";
+  }
+</script>a
