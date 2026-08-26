@@ -65,4 +65,217 @@
     }
 
     .form-group label {
-     
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+      font-size: 15px;
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .save-btn {
+      width: 100%;
+      padding: 13px;
+      background: #111;
+      color: white;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .save-btn:hover {
+      background: #333;
+    }
+
+    .status {
+      margin-top: 15px;
+      padding: 12px;
+      background: #eee;
+      border-radius: 7px;
+      display: none;
+    }
+
+    .login-box {
+      max-width: 450px;
+      margin: 60px auto;
+      padding: 25px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+    }
+
+    .login-box h2 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      background: #111;
+      color: white;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #adminPanel {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="loginBox" class="login-box">
+    <h2>Admin Login</h2>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="Admin email">
+    </div>
+
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Password">
+    </div>
+
+    <button class="login-btn" onclick="login()">
+      Login
+    </button>
+  </div>
+
+
+  <div id="adminPanel">
+
+    <header>
+      <h1>My Store Admin</h1>
+
+      <button class="logout-btn" onclick="logout()">
+        Logout
+      </button>
+    </header>
+
+
+    <div class="container">
+
+      <div class="card">
+        <h2>Add / Update Product</h2>
+
+        <div class="form-group">
+          <label>Product Name</label>
+          <input
+            type="text"
+            id="productName"
+            placeholder="Example: Classic Watch"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea
+            id="description"
+            placeholder="Product description"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Price (Rs.)</label>
+          <input
+            type="number"
+            id="price"
+            placeholder="2500"
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Image URL</label>
+          <input
+            type="text"
+            id="imageUrl"
+            placeholder="https://..."
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Stock</label>
+          <input
+            type="number"
+            id="stock"
+            placeholder="10"
+          >
+        </div>
+
+        <button class="save-btn" onclick="saveProduct()">
+          Save Product
+        </button>
+
+        <div id="status" class="status"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script>
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        alert("Email aur password enter karo.");
+        return;
+      }
+
+      // Temporary test login.
+      // Real Supabase login hum next step mein lagayenge.
+
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("adminPanel").style.display = "block";
+    }
+
+
+    function logout() {
+      document.getElementById("adminPanel").style.display = "none";
+      document.getElementById("loginBox").style.display = "block";
+    }
+
+
+    function saveProduct() {
+
+      const name = document.getElementById("productName").value;
+      const price = document.getElementById("price").value;
+
+      if (!name || !price) {
+        alert("Product name aur price enter karo.");
+        return;
+      }
+
+      const status = document.getElementById("status");
+
+      status.style.display = "block";
+      status.innerText =
+        "Product test mode mein save hua: " + name +
+        " - Rs. " + price;
+    }
+
+  </script>
+
+</body>
+</html>
