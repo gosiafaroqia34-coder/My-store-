@@ -84,32 +84,6 @@
       resize: vertical;
     }
 
-    .save-btn,
-    .login-btn {
-      width: 100%;
-      padding: 13px;
-      background: #111;
-      color: white;
-      border: none;
-      border-radius: 7px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    .save-btn:hover,
-    .login-btn:hover {
-      background: #333;
-    }
-
-    .status {
-      margin-top: 15px;
-      padding: 12px;
-      background: #eee;
-      border-radius: 7px;
-      display: none;
-    }
-
     .login-box {
       max-width: 450px;
       margin: 60px auto;
@@ -124,15 +98,51 @@
       text-align: center;
     }
 
+    .login-btn,
+    .save-btn {
+      width: 100%;
+      padding: 13px;
+      background: #111;
+      color: white;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .login-btn:hover,
+    .save-btn:hover {
+      background: #333;
+    }
+
+    .status {
+      margin-top: 15px;
+      padding: 12px;
+      background: #eee;
+      border-radius: 7px;
+      display: none;
+      word-break: break-word;
+    }
+
     #adminPanel {
       display: none;
+    }
+
+    .welcome {
+      margin-bottom: 20px;
+      color: #666;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- LOGIN -->
+
+  <!-- =========================
+       LOGIN SCREEN
+       ========================= -->
+
   <div id="loginBox" class="login-box">
 
     <h2>Admin Login</h2>
@@ -144,8 +154,10 @@
         type="email"
         id="email"
         placeholder="Admin email"
+        autocomplete="email"
       >
     </div>
+
 
     <div class="form-group">
       <label>Password</label>
@@ -154,24 +166,42 @@
         type="password"
         id="password"
         placeholder="Password"
+        autocomplete="current-password"
       >
     </div>
 
-    <button class="login-btn" onclick="login()">
+
+    <button
+      class="login-btn"
+      onclick="login()"
+    >
       Login
     </button>
+
+
+    <div
+      id="loginStatus"
+      class="status"
+    ></div>
 
   </div>
 
 
-  <!-- ADMIN PANEL -->
+
+  <!-- =========================
+       ADMIN PANEL
+       ========================= -->
+
   <div id="adminPanel">
 
     <header>
 
       <h1>My Store Admin</h1>
 
-      <button class="logout-btn" onclick="logout()">
+      <button
+        class="logout-btn"
+        onclick="logout()"
+      >
         Logout
       </button>
 
@@ -180,12 +210,18 @@
 
     <div class="container">
 
+      <p class="welcome">
+        Admin panel — products yahan se manage karo.
+      </p>
+
+
       <div class="card">
 
-        <h2>Add / Update Product</h2>
+        <h2>Add Product</h2>
 
 
         <!-- PRODUCT NAME -->
+
         <div class="form-group">
 
           <label>Product Name</label>
@@ -200,6 +236,7 @@
 
 
         <!-- DESCRIPTION -->
+
         <div class="form-group">
 
           <label>Description</label>
@@ -213,6 +250,7 @@
 
 
         <!-- PRICE -->
+
         <div class="form-group">
 
           <label>Price (Rs.)</label>
@@ -221,26 +259,29 @@
             type="number"
             id="price"
             placeholder="2500"
+            min="0"
           >
 
         </div>
 
 
-        <!-- IMAGE URL -->
+        <!-- IMAGE -->
+
         <div class="form-group">
 
           <label>Image URL</label>
 
           <input
-            type="text"
+            type="url"
             id="imageUrl"
-            placeholder="https://..."
+            placeholder="https://example.com/image.jpg"
           >
 
         </div>
 
 
         <!-- STOCK -->
+
         <div class="form-group">
 
           <label>Stock</label>
@@ -249,12 +290,14 @@
             type="number"
             id="stock"
             placeholder="10"
+            min="0"
           >
 
         </div>
 
 
         <!-- SAVE -->
+
         <button
           class="save-btn"
           onclick="saveProduct()"
@@ -263,8 +306,10 @@
         </button>
 
 
-        <!-- STATUS -->
-        <div id="status" class="status"></div>
+        <div
+          id="status"
+          class="status"
+        ></div>
 
       </div>
 
@@ -273,28 +318,26 @@
   </div>
 
 
-  <!-- SUPABASE -->
+
+  <!-- =========================
+       SUPABASE LIBRARY
+       ========================= -->
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 
   <script>
 
-    /* ==============================
-       SUPABASE CONNECTION
-       ============================== */
+    /* =========================
+       SUPABASE SETTINGS
+       ========================= */
 
     const SUPABASE_URL =
       "https://iuoknttbaqtjkvtdsmnc.supabase.co";
 
 
-    /*
-      YAHAN APNI PUBLISHABLE KEY PASTE KARO
-
-      sb_publishable_ se start hone wali key
-    */
-
     const SUPABASE_KEY =
-      "YAHAN_APNI_PUBLISHABLE_KEY_PASTE_KARO";
+      "sb_publishable_-7nAjjkLSd4A_9uENlNB2Q_GHbltB4M";
 
 
     const supabaseClient =
@@ -304,94 +347,231 @@
       );
 
 
-    /* ==============================
-       LOGIN
-       ============================== */
 
-    function login() {
+    /* =========================
+       LOGIN
+       ========================= */
+
+    async function login() {
 
       const email =
-        document.getElementById("email").value.trim();
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
 
       const password =
-        document.getElementById("password").value;
+        document
+          .getElementById("password")
+          .value;
+
+
+      const loginStatus =
+        document.getElementById(
+          "loginStatus"
+        );
 
 
       if (!email || !password) {
 
-        alert("Email aur password enter karo.");
+        loginStatus.style.display =
+          "block";
+
+        loginStatus.innerText =
+          "Email aur password enter karo.";
 
         return;
       }
 
 
-      /*
-        Filhaal temporary login.
-        Baad mein isko real Supabase Auth
-        ke saath connect karenge.
-      */
+      loginStatus.style.display =
+        "block";
 
-      document.getElementById("loginBox").style.display =
+      loginStatus.innerText =
+        "Login ho raha hai...";
+
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth
+          .signInWithPassword({
+
+            email: email,
+
+            password: password
+
+          });
+
+
+      if (error) {
+
+        console.error(error);
+
+
+        loginStatus.innerText =
+          "Login failed: " +
+          error.message;
+
+        return;
+      }
+
+
+      console.log(
+        "Logged in user:",
+        data.user
+      );
+
+
+      loginStatus.style.display =
         "none";
 
-      document.getElementById("adminPanel").style.display =
-        "block";
+
+      document
+        .getElementById("loginBox")
+        .style.display = "none";
+
+
+      document
+        .getElementById("adminPanel")
+        .style.display = "block";
+
     }
 
 
-    /* ==============================
+
+    /* =========================
+       CHECK EXISTING LOGIN
+       ========================= */
+
+    async function checkSession() {
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth
+          .getSession();
+
+
+      if (error) {
+
+        console.error(error);
+
+        return;
+      }
+
+
+      if (data.session) {
+
+        document
+          .getElementById("loginBox")
+          .style.display = "none";
+
+
+        document
+          .getElementById("adminPanel")
+          .style.display = "block";
+
+      }
+
+    }
+
+
+
+    /* =========================
        LOGOUT
-       ============================== */
+       ========================= */
 
-    function logout() {
+    async function logout() {
 
-      document.getElementById("adminPanel").style.display =
-        "none";
+      await supabaseClient.auth
+        .signOut();
 
-      document.getElementById("loginBox").style.display =
-        "block";
+
+      document
+        .getElementById("adminPanel")
+        .style.display = "none";
+
+
+      document
+        .getElementById("loginBox")
+        .style.display = "block";
+
+
+      document
+        .getElementById("email")
+        .value = "";
+
+
+      document
+        .getElementById("password")
+        .value = "";
+
     }
 
 
-    /* ==============================
+
+    /* =========================
        SAVE PRODUCT
-       ============================== */
+       ========================= */
 
     async function saveProduct() {
 
       const name =
-        document.getElementById("productName").value.trim();
+        document
+          .getElementById("productName")
+          .value
+          .trim();
 
 
       const description =
-        document.getElementById("description").value.trim();
+        document
+          .getElementById("description")
+          .value
+          .trim();
 
 
       const price =
         Number(
-          document.getElementById("price").value
+          document
+            .getElementById("price")
+            .value
         );
 
 
       const imageUrl =
-        document.getElementById("imageUrl").value.trim();
+        document
+          .getElementById("imageUrl")
+          .value
+          .trim();
 
 
       const stock =
         Number(
-          document.getElementById("stock").value
+          document
+            .getElementById("stock")
+            .value
         );
 
 
       const status =
-        document.getElementById("status");
+        document.getElementById(
+          "status"
+        );
 
 
       /* VALIDATION */
 
       if (!name) {
 
-        alert("Product name enter karo.");
+        status.style.display =
+          "block";
+
+        status.innerText =
+          "Product name enter karo.";
 
         return;
       }
@@ -399,18 +579,150 @@
 
       if (!price || price <= 0) {
 
-        alert("Valid price enter karo.");
+        status.style.display =
+          "block";
+
+        status.innerText =
+          "Valid price enter karo.";
 
         return;
       }
 
 
-      if (stock < 0 || Number.isNaN(stock)) {
+      if (
+        Number.isNaN(stock) ||
+        stock < 0
+      ) {
 
-        alert("Valid stock enter karo.");
+        status.style.display =
+          "block";
+
+        status.innerText =
+          "Valid stock enter karo.";
 
         return;
       }
 
 
-      /*
+      status.style.display =
+        "block";
+
+      status.innerText =
+        "Product database mein save ho raha hai...";
+
+
+      /* CURRENT USER */
+
+      const {
+        data: userData,
+        error: userError
+      } =
+        await supabaseClient.auth
+          .getUser();
+
+
+      if (userError || !userData.user) {
+
+        status.innerText =
+          "Login session nahi hai. Dobara login karo.";
+
+        return;
+      }
+
+
+      /* DATABASE INSERT */
+
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .from("products")
+          .insert({
+
+            name: name,
+
+            description:
+              description || null,
+
+            price: price,
+
+            image_url:
+              imageUrl || null,
+
+            stock: stock
+
+          })
+          .select();
+
+
+      /* DATABASE ERROR */
+
+      if (error) {
+
+        console.error(
+          "Supabase error:",
+          error
+        );
+
+
+        status.innerText =
+          "Database Error: " +
+          error.message;
+
+        return;
+      }
+
+
+      /* SUCCESS */
+
+      status.innerText =
+        "✅ Product database mein save ho gaya!";
+
+
+      console.log(
+        "Saved product:",
+        data
+      );
+
+
+      /* CLEAR FORM */
+
+      document
+        .getElementById("productName")
+        .value = "";
+
+
+      document
+        .getElementById("description")
+        .value = "";
+
+
+      document
+        .getElementById("price")
+        .value = "";
+
+
+      document
+        .getElementById("imageUrl")
+        .value = "";
+
+
+      document
+        .getElementById("stock")
+        .value = "";
+
+    }
+
+
+
+    /* =========================
+       START
+       ========================= */
+
+    checkSession();
+
+  </script>
+
+</body>
+</html>
